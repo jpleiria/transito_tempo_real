@@ -22,6 +22,20 @@
             border-left: 5px solid #3b82f6; pointer-events: none; letter-spacing: 2px;
         }
 
+        #dashboardTitle span {
+            display: block;
+        }
+
+        .title-main {
+            font-size: 1.6rem;
+        }
+
+        .title-sub {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            opacity: 0.75;
+        }
+
         /* --- JANELA DE LUPA PRO --- */
         #zoomWindow {
             position: absolute; top: 20px; right: 20px;
@@ -62,8 +76,11 @@
 <body>
 
     <div id="map"></div>
-    <div id="dashboardTitle">TRÂNSITO EM TEMPO REAL</div>
 
+    <div id="dashboardTitle">
+        <span class="title-main">TRÂNSITO EM TEMPO REAL</span>
+        <span class="title-sub">LEIRIA</span>
+    </div>
     <div id="zoomWindow">
         <div id="miniMapContainer"><div id="miniMap"></div><div class="scanline"></div></div>
         <div id="timerBar"><div id="timerFill"></div></div>
@@ -108,18 +125,18 @@
         currentMiniLayer = L.tileLayer(getTrafficUrl(), { maxZoom: 20 }).addTo(miniMap);
 
         const hotSpots = [
-            { name: "ROTUNDA - FERRUS", loc: [39.76386816918142, -8.782902269547668], zoom: 16 },
-{ name: "ROTUNDA - CINEMACITY", loc: [39.747218120830034, -8.819770762320687], zoom: 15 },
-{ name: "ROTUNDA - OLIVEIRAS", loc: [39.75472558940458, -8.815825236206226], zoom: 15 },
-{ name: "ROTUNDA D. DINIS", loc: [39.73926874806997, -8.818065427592712], zoom: 15 },
-{ name: "ROTUNDA - HOSPITAL", loc: [39.741332730956756, -8.793057953775264], zoom: 16 },
-{ name: "ROTUNDA CRUZ D´AREIA", loc: [39.7341341099626, -8.808602522815464], zoom: 15 },
-{ name: "ROTUNDA - LEIRIASHOPING", loc: [39.73475166190503, -8.82399402054537], zoom: 15 },
-{ name: "ROTUNDA SINALEIRO", loc: [39.74333125740587, -8.806518602151048], zoom: 15 },
-{ name: "CRUZAMENTO CMLEIRIA", loc: [39.741419671031714, -8.810535461363612], zoom: 15 },
-{ name: "ROTUNDA - CUF", loc: [39.745529770255814, -8.81769486177412], zoom: 15 },
-{ name: "ROTUNDA VALE LOBOS", loc: [39.73544585705467, -8.799190470413837], zoom: 15 },
-{ name: "CRUZAMENTO PLANALTO", loc: [39.756489811605135, -8.787857207718456], zoom: 15 }
+{ name: "ROTUNDA - FERRUS", loc: [39.76386816918142, -8.782902269547668], zoom: 17 },
+{ name: "ROTUNDA - CINEMACITY", loc: [39.74730983237065, -8.82013089411456], zoom: 17 },
+{ name: "ROTUNDA - OLIVEIRAS/GRELHA", loc: [39.75472558940458, -8.815825236206226], zoom: 16 },
+{ name: "ROTUNDA D. DINIS", loc: [39.73926874806997, -8.818065427592712], zoom: 17 },
+{ name: "ROTUNDA - HOSPITAL", loc: [39.741332730956756, -8.793057953775264], zoom: 17 },
+{ name: "ROTUNDA CRUZ D´AREIA", loc: [39.7341341099626, -8.808602522815464], zoom: 17 },
+{ name: "ROTUNDA - LEIRIASHOPING", loc: [39.73595196099935, -8.823381742940684], zoom: 16 },
+{ name: "ROTUNDA SINALEIRO", loc: [39.74333125740587, -8.806518602151048], zoom: 18 },
+{ name: "CRUZAMENTO CMLEIRIA", loc: [39.741419671031714, -8.810535461363612], zoom: 17 },
+{ name: "ROTUNDA - CUF", loc: [39.74546085657325, -8.8176528709753], zoom: 17 },
+{ name: "ROTUNDA VALE LOBOS", loc: [39.73544585705467, -8.799190470413837], zoom: 17 },
+{ name: "CRUZAMENTO PLANALTO", loc: [39.756489811605135, -8.787857207718456], zoom: 18 }
         ];
 
         let currentSpotIndex = 0;
