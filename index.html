@@ -36,6 +36,16 @@
             opacity: 0.75;
         }
 
+   /* --- LOGOS E RELÓGIO (Adicionados abaixo do título) --- */
+        .header-assets { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .header-assets img { height: 40px; width: auto; }
+        
+        #digitalClock {
+            font-family: 'Orbitron', sans-serif; color: #3b82f6;
+            font-size: 2rem; font-weight: 700; border-top: 1px solid rgba(59, 130, 246, 0.3);
+            margin-top: 10px; padding-top: 8px;
+        }
+
         /* --- JANELA DE LUPA PRO --- */
         #zoomWindow {
             position: absolute; top: 20px; right: 20px;
@@ -80,6 +90,14 @@
     <div id="dashboardTitle">
         <span class="title-main">TRÂNSITO EM TEMPO REAL</span>
         <span class="title-sub">LEIRIA</span>
+ <div class="header-assets">
+            <img src="leiria.png" alt="Logo 1">
+            <img src="logo.png" alt="Logo 2">
+        </div>
+
+        <div id="digitalClock">00:00:00</div>
+    </div>
+
     </div>
     <div id="zoomWindow">
         <div id="miniMapContainer"><div id="miniMap"></div><div class="scanline"></div></div>
@@ -108,12 +126,21 @@
         <div class="legend-item"><span style="width:12px; height:12px; background:#dc2626; border:1px solid #fff; display:inline-block; border-radius:2px;"></span> Bombeiros (CB)</div>
     </div>
 
-    <div id="statusMsg">Sistema Operacional</div>
+    <div id="statusMsg">SCH2ª João Paulo Pereira | CBSL</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.4/osmtogeojson.js"></script>
 
     <script>
+        // O código do relógio deve estar aqui dentro:
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('digitalClock').innerText = now.toLocaleTimeString('pt-PT');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- Resto do seu código original ---
         const getTrafficUrl = () => `https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}&t=${Date.now()}`;
         
         let currentMainLayer, currentMiniLayer;
