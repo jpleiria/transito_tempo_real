@@ -66,7 +66,7 @@
         .widget-box {
             background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
             padding: 12px 20px; border-radius: 4px; pointer-events: none;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8); min-width: 230px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8); width: fit-content;;
         }
         .widget-label { color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px; font-family: 'Orbitron'; margin-bottom: 4px; }
         .widget-value { color: #fff; font-size: 1.1rem; font-weight: 700; }
@@ -232,22 +232,34 @@
         }
 
         async function fetchAlerts() {
-            try {
-                const r = await fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json');
-                const d = await r.json();
-                const avisos = d.filter(a => a.idAreaAviso === "CDT10");
-                const w = document.getElementById('weatherWidget');
-                const val = document.getElementById('weatherValue');
+    try {
+        const r = await fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json');
+        const d = await r.json();
+        // Filtra para o distrito de Leiria (CDT10)
+        const avisos = d.filter(a => a.idAreaAviso === "CDT10");
+        const w = document.getElementById('weatherWidget');
+        const val = document.getElementById('weatherValue');
 
-                if (avisos.length === 0) {
-                    val.innerText = "SEM AVISOS"; val.style.color = "#22c55e"; w.style.borderLeftColor = "#22c55e";
-                } else {
-                    const main = avisos.sort((a,b) => ({"Vermelho":3,"Laranja":2,"Amarelo":1}[b.nivel] - {"Vermelho":3,"Laranja":2,"Amarelo":1}[a.nivel]))[0];
-                    const color = main.nivel === "Vermelho" ? "#dc2626" : (main.nivel === "Laranja" ? "#f97316" : "#fbbf24");
-                    val.innerText = main.nivel.toUpperCase(); val.style.color = color; w.style.borderLeftColor = color;
-                }
-            } catch(e) { document.getElementById('weatherValue').innerText = "ERRO API"; }
+        if (avisos.length === 0) {
+            val.innerText = "SEM AVISOS"; 
+            val.style.color = "#22c55e"; 
+            w.style.borderLeftColor = "#22c55e";
+        } else {
+            // Ordena para mostrar o aviso mais grave primeiro
+            const main = avisos.sort((a,b) => ({"Vermelho":3,"Laranja":2,"Amarelo":1}[b.nivel] - {"Vermelho":3,"Laranja":2,"Amarelo":1}[a.nivel]))[0];
+            
+            const color = main.nivel === "Vermelho" ? "#dc2626" : (main.nivel === "Laranja" ? "#f97316" : "#fbbf24");
+            
+            // ATUALIZAÇÃO AQUI: Mostra o Nível + Tipo de aviso (Ex: VERMELHO: PRECIPITAÇÃO)
+            val.innerText = `${main.nivel.toUpperCase()}: ${main.tipo.toUpperCase()}`; 
+            
+            val.style.color = color; 
+            w.style.borderLeftColor = color;
         }
+    } catch(e) { 
+        document.getElementById('weatherValue').innerText = "ERRO API"; 
+    }
+}
 
         function seamlessRefresh() {
             const url = getTrafficUrl();
