@@ -41,6 +41,22 @@
     50% { opacity: 0.3; }  /* Fica quase transparente a meio */
     100% { opacity: 1; }
 }
+@keyframes pulse-red {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.dot-live {
+    width: 10px;
+    height: 10px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 10px #ff0000;
+    animation: pulse-red 1.5s infinite ease-in-out;
+    flex-shrink: 0; /* Impede que o ponto esmague se o texto for longo */
+}
 
 .live-blink {
     animation: pulse-live 2s infinite ease-in-out;
@@ -70,7 +86,19 @@
         #timerBar { height: 3px; background: #1e293b; width: 100%; }
         #timerFill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.1s linear; }
 
-        #zoomLabel { background: #0f172a; color: #3b82f6; padding: 12px 15px; font-family: 'Orbitron'; font-size: 0,70rem; text-align: center; border-top: 1px solid #334155; display: flex; justify-content: space-between; }
+       #zoomLabel { 
+    background: #0f172a; 
+    color: #3b82f6; 
+    padding: 10px 15px; /* Ajuste suave do padding */
+    font-family: 'Orbitron'; 
+    font-size: 0.70rem; 
+    border-top: 1px solid #334155; 
+    
+    /* Alinhamento */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
 
         /* --- WIDGETS LADO ESQUERDO --- */
         .widget-box {
@@ -113,7 +141,7 @@
     <div id="zoomWindow">
         <div id="miniMapContainer"><div id="miniMap"></div><div class="scanline"></div></div>
         <div id="timerBar"><div id="timerFill"></div></div>
-        <div id="zoomLabel"><span id="spotName">A INICIAR...</span><span id="modeBadge">LIVE</span></div>
+        <div id="zoomLabel"><span id="spotName">A INICIAR...</span><span id="modeBadge" class="dot-live"></span></div>
     </div>
 
     <div class="widget-box" id="weatherWidget">
