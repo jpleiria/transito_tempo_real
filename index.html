@@ -49,7 +49,7 @@
         /* --- JANELA DE LUPA PRO --- */
         #zoomWindow {
             position: absolute; top: 20px; right: 20px;
-            width: 320px; height: 320px; z-index: 2000;
+            width: 450px; height: 450px; z-index: 2000;
             background: #0f172a; border: 2px solid #3b82f6; border-radius: 4px;
             box-shadow: 0 0 30px rgba(0,0,0,0.9); overflow: hidden; display: flex; flex-direction: column;
         }
@@ -60,7 +60,7 @@
         #timerBar { height: 3px; background: #1e293b; width: 100%; }
         #timerFill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.1s linear; }
 
-        #zoomLabel { background: #0f172a; color: #3b82f6; padding: 8px 10px; font-family: 'Orbitron'; font-size: 0.75rem; text-align: center; border-top: 1px solid #334155; display: flex; justify-content: space-between; }
+        #zoomLabel { background: #0f172a; color: #3b82f6; padding: 12px 15px; font-family: 'Orbitron'; font-size: 1rem; text-align: center; border-top: 1px solid #334155; display: flex; justify-content: space-between; }
 
         /* --- WIDGETS LADO ESQUERDO --- */
         .widget-box {
@@ -93,6 +93,7 @@
  <div class="header-assets">
             <img src="leiria.png" alt="Logo 1">
             <img src="logo.png" alt="Logo 2">
+            <img src="logo3.png" alt="Logo 3">
         </div>
 
         <div id="digitalClock">00:00:00</div>
@@ -102,7 +103,7 @@
     <div id="zoomWindow">
         <div id="miniMapContainer"><div id="miniMap"></div><div class="scanline"></div></div>
         <div id="timerBar"><div id="timerFill"></div></div>
-        <div id="zoomLabel"><span id="spotName">A INICIAR...</span><span id="modeBadge">AUTO</span></div>
+        <div id="zoomLabel"><span id="spotName">A INICIAR...</span><span id="modeBadge">LIVE</span></div>
     </div>
 
     <div class="widget-box" id="weatherWidget">
@@ -132,147 +133,192 @@
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.4/osmtogeojson.js"></script>
 
     <script>
-        // O código do relógio deve estar aqui dentro:
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('digitalClock').innerText = now.toLocaleTimeString('pt-PT');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // --- Resto do seu código original ---
-        const getTrafficUrl = () => `https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}&t=${Date.now()}`;
-        
-        let currentMainLayer, currentMiniLayer;
-        const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0 });
-        currentMainLayer = L.tileLayer(getTrafficUrl(), { maxZoom: 20 }).addTo(map);
-        map.fitBounds([[39.63, -9.02], [39.97, -8.55]]);
-
-        const miniMap = L.map('miniMap', { zoomControl: false, attributionControl: false, zoomSnap: 0, dragging: false });
-        currentMiniLayer = L.tileLayer(getTrafficUrl(), { maxZoom: 20 }).addTo(miniMap);
-
-        const hotSpots = [
-{ name: "ROTUNDA - FERRUS", loc: [39.76386816918142, -8.782902269547668], zoom: 17 },
-{ name: "ROTUNDA - CINEMACITY", loc: [39.74730983237065, -8.82013089411456], zoom: 17 },
-{ name: "ROTUNDA - OLIVEIRAS/GRELHA", loc: [39.75472558940458, -8.815825236206226], zoom: 16 },
-{ name: "ROTUNDA D. DINIS", loc: [39.73926874806997, -8.818065427592712], zoom: 17 },
-{ name: "ROTUNDA - HOSPITAL", loc: [39.741332730956756, -8.793057953775264], zoom: 17 },
-{ name: "ROTUNDA CRUZ D´AREIA", loc: [39.7341341099626, -8.808602522815464], zoom: 17 },
-{ name: "ROTUNDA - LEIRIASHOPING", loc: [39.73595196099935, -8.823381742940684], zoom: 16 },
-{ name: "ROTUNDA SINALEIRO", loc: [39.74333125740587, -8.806518602151048], zoom: 18 },
-{ name: "CRUZAMENTO CMLEIRIA", loc: [39.741419671031714, -8.810535461363612], zoom: 17 },
-{ name: "ROTUNDA - CUF", loc: [39.74546085657325, -8.8176528709753], zoom: 17 },
-{ name: "ROTUNDA VALE LOBOS", loc: [39.73544585705467, -8.799190470413837], zoom: 17 },
-{ name: "CRUZAMENTO PLANALTO", loc: [39.756489811605135, -8.787857207718456], zoom: 18 }
-        ];
-
-        let currentSpotIndex = 0;
-        const ROTATION_TIME = 5000;
-        let timeLeft = ROTATION_TIME;
-        let lastFrameTime = Date.now();
-
-        function gameLoop() {
-            requestAnimationFrame(gameLoop);
-            const now = Date.now();
-            const dt = now - lastFrameTime;
-            lastFrameTime = now;
-            timeLeft -= dt;
-            document.getElementById('timerFill').style.width = `${(timeLeft / ROTATION_TIME) * 100}%`;
-            if (timeLeft <= 0) {
-                currentSpotIndex = (currentSpotIndex + 1) % hotSpots.length;
-                updateSpot();
-            }
-        }
-
-        function updateSpot() {
-            const spot = hotSpots[currentSpotIndex];
-            miniMap.setView(spot.loc, spot.zoom);
-            document.getElementById('spotName').innerText = spot.name;
-            timeLeft = ROTATION_TIME;
-        }
-
-        async function applyMask() {
-            try {
-                const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent('[out:json];relation["name"="Leiria"]["admin_level"="7"];out geom;')}`);
-                const geojson = osmtogeojson(await response.json());
-                const feature = geojson.features.find(f => f.geometry.type.includes("Polygon"));
-                if (feature) {
-                    const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
-                    const hole = feature.geometry.type === "Polygon" ? feature.geometry.coordinates[0].map(c => [c[1], c[0]]) : feature.geometry.coordinates[0][0].map(c => [c[1], c[0]]);
-                    L.polygon([world, hole], { color: 'transparent', fillColor: '#09090b', fillOpacity: 0.8 }).addTo(map);
-                    L.geoJSON(feature, { style: { color: "#3b82f6", weight: 2, fill: false } }).addTo(map);
-                }
-            } catch (e) {}
-        }
-
-        function addFireStations() {
-            const cbs = [
-                { code: "1002", lat: 39.741155, lng: -8.800315 },
-                { code: "1020", lat: 39.685008, lng: -8.887350 },
-                { code: "1022", lat: 39.767401, lng: -8.816472 },
-                { code: "1022", lat: 39.882945, lng: -8.837566 },
-                { code: "1025", lat: 39.821343, lng: -8.839415 }
-            ];
-            cbs.forEach(cb => {
-                const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [35, 20] });
-                L.marker([cb.lat, cb.lng], { icon: icon }).addTo(map);
-            });
-        }
-
-        async function fetchRisk() {
-            try {
-                const r = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/rcm/rcm-d0.json');
-                const d = await r.json();
-                const nivel = d.local["1009"]?.data.rcm || 0;
-                const info = { 1: {t:"REDUZIDO",c:"#22c55e"}, 2: {t:"MODERADO",c:"#eab308"}, 3: {t:"ELEVADO",c:"#f97316"}, 4: {t:"M. ELEVADO",c:"#ef4444"}, 5: {t:"MÁXIMO",c:"#dc2626"} }[nivel] || {t:"N/D",c:"#64748b"};
-                const el = document.getElementById('riskValue');
-                el.innerText = info.t; el.style.color = info.c;
-                document.getElementById('riskWidget').style.borderLeftColor = info.c;
-            } catch(e) {}
-        }
-
-        async function fetchAlerts() {
-    try {
-        const r = await fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json');
-        const d = await r.json();
-        // Filtra para o distrito de Leiria (CDT10)
-        const avisos = d.filter(a => a.idAreaAviso === "CDT10");
-        const w = document.getElementById('weatherWidget');
-        const val = document.getElementById('weatherValue');
-
-        if (avisos.length === 0) {
-            val.innerText = "SEM AVISOS"; 
-            val.style.color = "#22c55e"; 
-            w.style.borderLeftColor = "#22c55e";
-        } else {
-            // Ordena para mostrar o aviso mais grave primeiro
-            const main = avisos.sort((a,b) => ({"Vermelho":3,"Laranja":2,"Amarelo":1}[b.nivel] - {"Vermelho":3,"Laranja":2,"Amarelo":1}[a.nivel]))[0];
-            
-            const color = main.nivel === "Vermelho" ? "#dc2626" : (main.nivel === "Laranja" ? "#f97316" : "#fbbf24");
-            
-            // ATUALIZAÇÃO AQUI: Mostra o Nível + Tipo de aviso (Ex: VERMELHO: PRECIPITAÇÃO)
-            val.innerText = `${main.nivel.toUpperCase()}: ${main.tipo.toUpperCase()}`; 
-            
-            val.style.color = color; 
-            w.style.borderLeftColor = color;
-        }
-    } catch(e) { 
-        document.getElementById('weatherValue').innerText = "ERRO API"; 
+        // 1. RELÓGIO
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('digitalClock').innerText = now.toLocaleTimeString('pt-PT');
     }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. CONFIGURAÇÃO DOS MAPAS
+    const getTrafficUrl = () => `https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}&t=${Date.now()}`;
+    
+    let currentMainLayer, currentMiniLayer;
+    
+    // Mapa Principal
+    const map = L.map('map', { zoomControl: false, attributionControl: false, zoomSnap: 0 });
+    currentMainLayer = L.tileLayer(getTrafficUrl(), { maxZoom: 20 }).addTo(map);
+    map.fitBounds([[39.63, -9.02], [39.97, -8.55]]);
+
+    // Mini Mapa (Janela de Zoom)
+const miniMap = L.map('miniMap', { 
+    zoomControl: false, 
+    attributionControl: false, 
+    zoomSnap: 0, 
+    dragging: false,
+    fadeAnimation: false // Desativar animação evita o flash cinzento
+});
+currentMiniLayer = L.tileLayer(getTrafficUrl(), { 
+    maxZoom: 20,
+    updateWhenIdle: false 
+}).addTo(miniMap);
+
+    const hotSpots = [
+        { name: "ROTUNDA - D. DINIS", loc: [39.73926874806997, -8.818065427592712], zoom: 17 },
+        { name: "ROTUNDA - FERRUS", loc: [39.76356960495452, -8.782836987121206], zoom: 17 },
+        { name: "ROTUNDA - CINEMACITY", loc: [39.74730983237065, -8.82013089411456], zoom: 17 },
+        { name: "ROTUNDA - OLIVEIRAS/GRELHA", loc: [39.75472558940458, -8.815825236206226], zoom: 16 },
+        { name: "ROTUNDA - HOSPITAL", loc: [39.741332730956756, -8.793057953775264], zoom: 17 },
+        { name: "ROTUNDA - CRUZ D´AREIA", loc: [39.7341341099626, -8.808602522815464], zoom: 17 },
+        { name: "ROTUNDA - LEIRIASHOPING", loc: [39.73595196099935, -8.823381742940684], zoom: 16 },
+        { name: "ROTUNDA - SINALEIRO", loc: [39.74333125740587, -8.806518602151048], zoom: 18 },
+        { name: "CRUZAMENTO - CMLEIRIA", loc: [39.741419671031714, -8.810535461363612], zoom: 17 },
+        { name: "ROTUNDA - CUF", loc: [39.74546085657325, -8.8176528709753], zoom: 17 },
+        { name: "ROTUNDA - VALE LOBOS", loc: [39.73544585705467, -8.799190470413837], zoom: 17 },
+        { name: "CRUZAMENTO - PLANALTO", loc: [39.756489811605135, -8.787857207718456], zoom: 18 }
+    ];
+
+    let currentSpotIndex = 0;
+    const ROTATION_TIME = 5000;
+    let timeLeft = ROTATION_TIME;
+    let lastFrameTime = Date.now();
+
+    // 3. CICLO DE ANIMAÇÃO
+    function gameLoop() {
+        requestAnimationFrame(gameLoop);
+        const now = Date.now();
+        const dt = now - lastFrameTime;
+        lastFrameTime = now;
+        timeLeft -= dt;
+        
+        document.getElementById('timerFill').style.width = `${Math.max(0, (timeLeft / ROTATION_TIME) * 100)}%`;
+        
+        if (timeLeft <= 0) {
+            currentSpotIndex = (currentSpotIndex + 1) % hotSpots.length;
+            updateSpot();
+        }
+    }
+
+    function updateSpot() {
+    const spot = hotSpots[currentSpotIndex];
+    
+    // Força o mapa a reconhecer o seu tamanho real antes de mudar a vista
+    miniMap.invalidateSize();
+    
+    // Mudar a localização
+    miniMap.setView(spot.loc, spot.zoom, { animate: false });
+    
+    document.getElementById('spotName').innerText = spot.name;
+    timeLeft = ROTATION_TIME;
 }
 
-        function seamlessRefresh() {
-            const url = getTrafficUrl();
-            const nMain = L.tileLayer(url, { maxZoom: 20 }).addTo(map);
-            nMain.on('load', () => { if(currentMainLayer) map.removeLayer(currentMainLayer); currentMainLayer = nMain; });
-            const nMini = L.tileLayer(url, { maxZoom: 20 }).addTo(miniMap);
-            nMini.on('load', () => { if(currentMiniLayer) miniMap.removeLayer(currentMiniLayer); currentMiniLayer = nMini; });
-        }
+    // 4. ATUALIZAÇÃO DO TRÂNSITO (RESOLVE O PROBLEMA DO MAPA SUMIR)
+    function seamlessRefresh() {
+    const newUrl = getTrafficUrl();
+    
+    // Atualiza o mapa principal (aqui o método antigo funciona bem)
+    const nextMain = L.tileLayer(newUrl, { maxZoom: 20 }).addTo(map);
+    nextMain.on('load', () => {
+        if (currentMainLayer) map.removeLayer(currentMainLayer);
+        currentMainLayer = nextMain;
+    });
 
-        applyMask(); addFireStations(); fetchRisk(); fetchAlerts(); updateSpot(); gameLoop();
-        setInterval(seamlessRefresh, 60000); setInterval(fetchRisk, 3600000); setInterval(fetchAlerts, 1800000);
+    // NO MINI MAPA: Apenas trocamos a URL da camada atual
+    // Isto evita que o mapa fique "vazio" ao repetir o ciclo
+    if (currentMiniLayer) {
+        currentMiniLayer.setUrl(newUrl);
+    }
+
+        // Novo layer para o mini mapa
+        const nextMini = L.tileLayer(url, { maxZoom: 20 }).addTo(miniMap);
+        nextMini.on('load', () => {
+            if (currentMiniLayer) miniMap.removeLayer(currentMiniLayer);
+            currentMiniLayer = nextMini;
+            // Garante que a vista atual é mantida após a troca de camada
+            const spot = hotSpots[currentSpotIndex];
+            miniMap.setView(spot.loc, spot.zoom, { animate: false });
+        });
+    }
+
+    // 5. FUNÇÕES DE DADOS (Máscara, Incêndio, Alertas)
+    async function applyMask() {
+        try {
+            const response = await fetch('limite.geojson');
+            if (!response.ok) return;
+            const data = await response.json();
+            const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
+            const hole = L.GeoJSON.coordsToLatLngs(data.features[0].geometry.coordinates, 1);
+
+            L.polygon([world, hole], { 
+                color: 'transparent', fillColor: '#09090b', fillOpacity: 0.8, interactive: false 
+            }).addTo(map);
+
+            L.geoJSON(data, { 
+                style: { color: "#3b82f6", weight: 2, fill: false, interactive: false } 
+            }).addTo(map);
+
+            map.fitBounds(L.geoJSON(data).getBounds());
+        } catch (e) { console.error("Erro máscara:", e); }
+    }
+
+    function addFireStations() {
+        const cbs = [
+            { code: "1002", lat: 39.741155, lng: -8.800315 },
+            { code: "1020", lat: 39.685008, lng: -8.887350 },
+            { code: "1022", lat: 39.767401, lng: -8.816472 },
+            { code: "1022", lat: 39.882945, lng: -8.837566 },
+            { code: "1025", lat: 39.821343, lng: -8.839415 }
+        ];
+        cbs.forEach(cb => {
+            const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [35, 20] });
+            L.marker([cb.lat, cb.lng], { icon: icon }).addTo(map);
+        });
+    }
+
+    async function fetchRisk() {
+        try {
+            const r = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/rcm/rcm-d0.json');
+            const d = await r.json();
+            const nivel = d.local["1009"]?.data.rcm || 0;
+            const info = { 1: {t:"REDUZIDO",c:"#22c55e"}, 2: {t:"MODERADO",c:"#eab308"}, 3: {t:"ELEVADO",c:"#f97316"}, 4: {t:"M. ELEVADO",c:"#ef4444"}, 5: {t:"MÁXIMO",c:"#dc2626"} }[nivel] || {t:"N/D",c:"#64748b"};
+            const el = document.getElementById('riskValue');
+            el.innerText = info.t; el.style.color = info.c;
+            document.getElementById('riskWidget').style.borderLeftColor = info.c;
+        } catch(e) {}
+    }
+
+    async function fetchAlerts() {
+        try {
+            const r = await fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json');
+            const d = await r.json();
+            const avisos = d.filter(a => a.idAreaAviso === "CDT10");
+            const w = document.getElementById('weatherWidget');
+            const val = document.getElementById('weatherValue');
+
+            if (avisos.length === 0) {
+                val.innerText = "SEM AVISOS"; val.style.color = "#22c55e"; w.style.borderLeftColor = "#22c55e";
+            } else {
+                const main = avisos.sort((a,b) => ({"Vermelho":3,"Laranja":2,"Amarelo":1}[b.nivel] - {"Vermelho":3,"Laranja":2,"Amarelo":1}[a.nivel]))[0];
+                const color = main.nivel === "Vermelho" ? "#dc2626" : (main.nivel === "Laranja" ? "#f97316" : "#fbbf24");
+                val.innerText = `${main.nivel.toUpperCase()}: ${main.tipo.toUpperCase()}`; 
+                val.style.color = color; w.style.borderLeftColor = color;
+            }
+        } catch(e) { document.getElementById('weatherValue').innerText = "ERRO API"; }
+    }
+
+    // 6. INICIALIZAÇÃO
+    applyMask(); 
+    addFireStations(); 
+    fetchRisk(); 
+    fetchAlerts(); 
+    updateSpot(); 
+    gameLoop();
+
+    // 7. INTERVALOS DE ATUALIZAÇÃO
+    setInterval(seamlessRefresh, 60000); // Trânsito a cada 60s
+    setInterval(fetchRisk, 3600000);     // Risco Incêndio a cada 1h
+    setInterval(fetchAlerts, 1800000);   // Meteorologia a cada 30min
     </script>
 </body>
-
 </html>
-
