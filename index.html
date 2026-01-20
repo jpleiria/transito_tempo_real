@@ -35,6 +35,16 @@
             letter-spacing: 3px;
             opacity: 0.75;
         }
+/* Animação para o efeito de Gravação/Live */
+@keyframes pulse-live {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }  /* Fica quase transparente a meio */
+    100% { opacity: 1; }
+}
+
+.live-blink {
+    animation: pulse-live 2s infinite ease-in-out;
+}
 
    /* --- LOGOS E RELÓGIO (Adicionados abaixo do título) --- */
         .header-assets { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
@@ -93,7 +103,7 @@
  <div class="header-assets">
             <img src="leiria.png" alt="Logo 1">
             <img src="logo.png" alt="Logo 2">
-            <img src="logo3.png" alt="Logo 3">
+            <img src="logo3.png" id="logo" class="live-blink">
         </div>
 
         <div id="digitalClock">00:00:00</div>
