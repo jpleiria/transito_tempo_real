@@ -117,7 +117,7 @@
         .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; font-size: 0.8rem; color: #cbd5e1; }
         .line { width: 20px; height: 4px; border-radius: 2px; }
 
-        .cb-badge { background-color: #dc2626; color: #fff; border: 2px solid #fff; border-radius: 4px; font-weight: 700; font-size: 11px; padding: 2px 4px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .cb-badge { background-color: #dc2626; color: #fff; border: 2px solid #fff; border-radius: 4px; font-weight: 700; font-size: 10px; padding: 2px 4px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         #statusMsg { position: absolute; bottom: 5px; right: 5px; z-index: 3000; color: #64748b; font-size: 0.65rem; font-family: 'Orbitron'; }
     </style>
 </head>
@@ -329,7 +329,7 @@ async function addFreguesias() {
             { code: "BVO", lat: 39.821343, lng: -8.839415 }
         ];
         cbs.forEach(cb => {
-            const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [35, 20] });
+            const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [30, 15] });
             L.marker([cb.lat, cb.lng], { icon: icon }).addTo(map);
         });
     }
