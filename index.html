@@ -300,6 +300,26 @@ currentMiniLayer = L.tileLayer(getTrafficUrl(), {
         } catch (e) { console.error("Erro máscara:", e); }
     }
 
+async function addFreguesias() {
+    try {
+        const response = await fetch('freguesias_leiria.geojson'); // Nome do teu ficheiro
+        if (!response.ok) return;
+        const data = await response.json();
+
+        L.geoJSON(data, {
+            style: {
+                color: "#475569",      // Cor da linha (cinzento azulado)
+                weight: 1,             // Espessura da linha
+                opacity: 0.5,          // Transparência da linha
+                fillOpacity: 0,        // Sem preenchimento para não tapar o mapa
+                interactive: false     // Não interfere com os cliques no mapa
+            }
+        }).addTo(map);
+    } catch (e) {
+        console.error("Erro ao carregar freguesias:", e);
+    }
+}
+
     function addFireStations() {
         const cbs = [
             { code: "1002", lat: 39.741155, lng: -8.800315 },
@@ -347,6 +367,7 @@ currentMiniLayer = L.tileLayer(getTrafficUrl(), {
 
     // 6. INICIALIZAÇÃO
     applyMask(); 
+    addFreguesias();
     addFireStations(); 
     fetchRisk(); 
     fetchAlerts(); 
