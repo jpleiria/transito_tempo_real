@@ -322,11 +322,11 @@ async function addFreguesias() {
 
     function addFireStations() {
         const cbs = [
-            { code: "1002", lat: 39.741155, lng: -8.800315 },
-            { code: "1020", lat: 39.685008, lng: -8.887350 },
-            { code: "1022", lat: 39.767401, lng: -8.816472 },
-            { code: "1022", lat: 39.882945, lng: -8.837566 },
-            { code: "1025", lat: 39.821343, lng: -8.839415 }
+            { code: "BSL", lat: 39.741155, lng: -8.800315 },
+            { code: "BVM", lat: 39.685008, lng: -8.887350 },
+            { code: "BVL", lat: 39.767401, lng: -8.816472 },
+            { code: "BVL", lat: 39.882945, lng: -8.837566 },
+            { code: "BVO", lat: 39.821343, lng: -8.839415 }
         ];
         cbs.forEach(cb => {
             const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [35, 20] });
@@ -382,6 +382,7 @@ async function addFreguesias() {
 </body>
 
 </html>
+
 
 
 
