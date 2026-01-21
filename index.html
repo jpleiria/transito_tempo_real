@@ -329,7 +329,7 @@ async function addFreguesias() {
             { code: "BVO", lat: 39.821343, lng: -8.839415 }
         ];
         cbs.forEach(cb => {
-            const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [30, 15] });
+            const icon = L.divIcon({ className: 'dummy', html: `<div class="cb-badge">${cb.code}</div>`, iconSize: [32, 12] });
             L.marker([cb.lat, cb.lng], { icon: icon }).addTo(map);
         });
     }
@@ -382,6 +382,7 @@ async function addFreguesias() {
 </body>
 
 </html>
+
 
 
 
