@@ -347,14 +347,17 @@ async function addFreguesias() {
         } catch(e) {}
     }
 
-    async function fetchAlerts() {
+   async function fetchAlerts() {
+    // Usamos um proxy público para evitar o erro de CORS em ambiente local/web
+    const urlOriginal = 'https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json';
+    const urlProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(urlOriginal);
+
     try {
-        const r = await fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json');
-        if (!r.ok) throw new Error('Falha na rede');
+        const r = await fetch(urlProxy);
+        if (!r.ok) throw new Error('Erro na resposta do servidor');
         
         const d = await r.json();
-        console.log("Dados IPMA recebidos:", d); // Verifique isto na consola (F12)
-
+        
         // Filtra por Leiria (LRA)
         const avisos = d.filter(a => a.idAreaAviso === "LRA");
         const w = document.getElementById('weatherWidget');
@@ -365,7 +368,6 @@ async function addFreguesias() {
             val.style.color = "#22c55e"; 
             w.style.borderLeftColor = "#22c55e";
         } else {
-            // Ordena para mostrar o aviso mais grave primeiro
             const prioridade = {"Vermelho": 3, "Laranja": 2, "Amarelo": 1};
             const main = avisos.sort((a, b) => (prioridade[b.nivel] || 0) - (prioridade[a.nivel] || 0))[0];
             
@@ -382,7 +384,7 @@ async function addFreguesias() {
         }
     } catch(e) { 
         console.error("Erro detalhado:", e);
-        document.getElementById('weatherValue').innerText = "ERRO CONEXÃO"; 
+        document.getElementById('weatherValue').innerText = "ERRO API (CORS)"; 
     }
 }
 
