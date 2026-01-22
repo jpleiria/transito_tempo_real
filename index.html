@@ -110,8 +110,13 @@
         .widget-label { color: #94a3b8; font-size: 0.7rem; letter-spacing: 1px; font-family: 'Orbitron'; margin-bottom: 4px; }
         .widget-value { color: #fff; font-size: 1.1rem; font-weight: 700; }
         
-        #weatherWidget { position: absolute; bottom: 340px; left: 20px; z-index: 2000; border-left: 5px solid #22c55e; }
-        #riskWidget { position: absolute; bottom: 250px; left: 20px; z-index: 2000; border-left: 5px solid #64748b; }
+                #riskWidget { 
+    position: absolute; 
+    bottom: 210px; /* Pode ajustar este valor para 340px se quiser que suba para a posição do antigo */
+    left: 20px; 
+    z-index: 2000; 
+    border-left: 5px solid #64748b; 
+}
         .map-legend { position: absolute; bottom: 25px; left: 20px; z-index: 2000; }
 
         .legend-title { font-weight: bold; margin-bottom: 5px; color: #fff; border-bottom: 1px solid #475569; padding-bottom: 3px; font-size: 0.8rem; }
@@ -143,12 +148,6 @@
         <div id="miniMapContainer"><div id="miniMap"></div><div class="scanline"></div></div>
         <div id="timerBar"><div id="timerFill"></div></div>
         <div id="zoomLabel"><span id="spotName">A INICIAR...</span><span id="modeBadge" class="dot-live"></span></div>
-    </div>
-
-    <div class="widget-box" id="weatherWidget">
-        <div class="widget-label"><i class="fa-solid fa-cloud-bolt"></i> AVISOS METEOROLÓGICOS</div>
-        <div class="widget-value" id="weatherValue">VERIFICANDO...</div>
-        <div style="font-size:0.7rem; color:#64748b">DISTRITO DE LEIRIA</div>
     </div>
 
     <div class="widget-box" id="riskWidget">
@@ -335,52 +334,29 @@ async function addFreguesias() {
         });
     }
 
-    async function fetchAlerts() {
-    try {
-        // Substitua pelo SEU URL do Google Script
-        const proxyUrl = 'https://script.google.com/macros/s/AKfycbzYyrw3l7p7XBXLjLgN4y03fqCkePiMEzpWDetJU0nH9BnXf9g5X544xMbQO5e2krU1/exec'; 
-        
-        const r = await fetch(proxyUrl);
-        const d = await r.json();
-        
-        // Filtra por Leiria (LRA)
-        const avisos = d.filter(a => a.idAreaAviso === "LRA");
-        const w = document.getElementById('weatherWidget');
-        const val = document.getElementById('weatherValue');
-
-        if (!avisos || avisos.length === 0) {
-            val.innerText = "SEM AVISOS"; 
-            val.style.color = "#22c55e"; 
-            w.style.borderLeftColor = "#22c55e";
-        } else {
-            // Ordena por gravidade
-            const prioridade = {"Vermelho":3, "Laranja":2, "Amarelo":1};
-            const main = avisos.sort((a,b) => (prioridade[b.nivel] || 0) - (prioridade[a.nivel] || 0))[0];
-            
-            const color = main.nivel === "Vermelho" ? "#dc2626" : (main.nivel === "Laranja" ? "#f97316" : "#fbbf24");
-            val.innerText = `${main.nivel.toUpperCase()}: ${main.tipo.toUpperCase()}`; 
-            val.style.color = color; 
-            w.style.borderLeftColor = color;
-        }
-    } catch(e) { 
-        console.error(e);
-        document.getElementById('weatherValue').innerText = "ERRO CONEXÃO"; 
+    async function fetchRisk() {
+        try {
+            const r = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/rcm/rcm-d0.json');
+            const d = await r.json();
+            const nivel = d.local["1009"]?.data.rcm || 0;
+            const info = { 1: {t:"REDUZIDO",c:"#22c55e"}, 2: {t:"MODERADO",c:"#eab308"}, 3: {t:"ELEVADO",c:"#f97316"}, 4: {t:"M. ELEVADO",c:"#ef4444"}, 5: {t:"MÁXIMO",c:"#dc2626"} }[nivel] || {t:"N/D",c:"#64748b"};
+            const el = document.getElementById('riskValue');
+            el.innerText = info.t; el.style.color = info.c;
+            document.getElementById('riskWidget').style.borderLeftColor = info.c;
+        } catch(e) {}
     }
-}
 
     // 6. INICIALIZAÇÃO
     applyMask(); 
     addFreguesias();
     addFireStations(); 
     fetchRisk(); 
-    fetchAlerts(); 
     updateSpot(); 
     gameLoop();
 
     // 7. INTERVALOS DE ATUALIZAÇÃO
     setInterval(seamlessRefresh, 60000); // Trânsito a cada 60s
     setInterval(fetchRisk, 3600000);     // Risco Incêndio a cada 1h
-    setInterval(fetchAlerts, 1800000);   // Meteorologia a cada 30min
     </script>
 </body>
 
