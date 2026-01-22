@@ -7,7 +7,7 @@
     <link rel="icon" href="favicon.ico">
     
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
     <style>
@@ -348,52 +348,56 @@ async function addFreguesias() {
     }
 
    async function fetchAlerts() {
-    // Usamos o AllOrigins para contornar o bloqueio de CORS do IPMA
-    const urlOriginal = 'https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json';
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urlOriginal)}`;
+    const w = document.getElementById('weatherWidget');
+    const val = document.getElementById('weatherValue');
+    
+    // Lista de proxies para tentar caso um falhe
+    const proxies = [
+        (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        (url) => `https://thingproxy.freeboard.io/fetch/${url}`
+    ];
 
-    try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('Erro na rede');
-        
+    async function tryFetch(proxyFn) {
+        const urlIPMA = 'https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json';
+        const response = await fetch(proxyFn(urlIPMA));
+        if (!response.ok) throw new Error();
         const data = await response.json();
         
-        // O AllOrigins devolve o JSON do IPMA como uma string dentro de 'contents'
-        // Precisamos de converter essa string de volta para um objeto JavaScript
-        const d = JSON.parse(data.contents);
-        
-        // Filtra especificamente por Leiria (LRA)
+        // Se vier do AllOrigins, extrair 'contents', se não, usar dado direto
+        return typeof data.contents === 'string' ? JSON.parse(data.contents) : data;
+    }
+
+    try {
+        // Tenta o primeiro proxy
+        let d;
+        try {
+            d = await tryFetch(proxies[0]);
+        } catch (e) {
+            // Se falhar, tenta o segundo
+            d = await tryFetch(proxies[1]);
+        }
+
         const avisos = d.filter(a => a.idAreaAviso === "LRA");
-        const w = document.getElementById('weatherWidget');
-        const val = document.getElementById('weatherValue');
 
         if (!avisos || avisos.length === 0) {
             val.innerText = "SEM AVISOS"; 
             val.style.color = "#22c55e"; 
             w.style.borderLeftColor = "#22c55e";
         } else {
-            // Define a ordem de importância (o mais grave aparece no topo)
             const prioridade = {"Vermelho": 3, "Laranja": 2, "Amarelo": 1};
             const main = avisos.sort((a, b) => (prioridade[b.nivel] || 0) - (prioridade[a.nivel] || 0))[0];
             
-            const cores = {
-                "Vermelho": "#dc2626",
-                "Laranja": "#f97316",
-                "Amarelo": "#fbbf24"
-            };
-            
+            const cores = {"Vermelho": "#dc2626", "Laranja": "#f97316", "Amarelo": "#fbbf24"};
             const color = cores[main.nivel] || "#64748b";
             
-            // Atualiza o widget com o tipo de aviso e a cor correspondente
             val.innerText = `${main.nivel.toUpperCase()}: ${main.tipo.toUpperCase()}`; 
             val.style.color = color; 
             w.style.borderLeftColor = color;
         }
     } catch(e) {
-        console.error("Erro IPMA:", e);
-        // Se falhar tudo, indica que não foi possível obter os dados
-        document.getElementById('weatherValue').innerText = "INDISPONÍVEL";
-        document.getElementById('weatherValue').style.color = "#64748b";
+        console.error("Erro em todos os proxies:", e);
+        val.innerText = "VERIFICAR IPMA.PT";
+        val.style.color = "#64748b";
     }
 }
 
